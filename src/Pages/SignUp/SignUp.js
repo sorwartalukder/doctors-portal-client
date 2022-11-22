@@ -1,13 +1,60 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../contexts/AuthProvider';
+import toast from 'react-hot-toast';
+import useToken from '../../hooks/useToken';
 
 const SignUp = () => {
     const { register, handleSubmit, formState: { errors } } = useForm()
-    const handleSignUp = data => {
-        console.log(data)
-        console.log(errors)
+    const { createUser, updateUserProfile } = useContext(AuthContext)
+    const [signUpError, setSignUpError] = useState('')
+    const [createdUserEmail, setCreatedUserEmail] = useState('')
+
+    const [token] = useToken(createdUserEmail);
+    const navigate = useNavigate()
+    if (token) {
+        navigate('/')
     }
+    const handleSignUp = data => {
+        setSignUpError('')
+        createUser(data.email, data.password)
+            .then((result) => {
+                toast.success('User Created Successfully.')
+                const user = result.user;
+                const userInfo = {
+                    displayName: data.name
+                }
+                updateUserProfile(userInfo)
+                    .then(() => {
+                        saveUser(user.displayName, user.email)
+                    })
+                    .catch(e => console.error(e))
+            })
+            .catch((error) => {
+                const errorMessage = error.message;
+                setSignUpError(errorMessage)
+                console.error(error)
+            });
+    }
+    const saveUser = (name, email) => {
+        const user = { name, email }
+        fetch('http://localhost:5000/users', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify(user)
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log('saveUser', data)
+                setCreatedUserEmail(email)
+
+            })
+    }
+
+
     return (
         <section className='h-[800px] flex justify-center items-center '>
             <div className='w-96 p-7 shadow-2xl rounded-lg'>
@@ -51,6 +98,7 @@ const SignUp = () => {
                             })}
                         />
                         {errors.password && <p className='text-red-600'>{errors.password?.message}</p>}
+                        {signUpError && <p className='text-red-600'>{signUpError}</p>}
                     </div>
                     <input className='btn btn-accent w-full mt-4' value='sign up' type="submit" />
                 </form>

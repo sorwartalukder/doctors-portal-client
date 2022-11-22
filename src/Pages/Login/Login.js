@@ -1,17 +1,43 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useForm } from "react-hook-form";
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../contexts/AuthProvider';
+import useToken from '../../hooks/useToken';
 
 const Login = () => {
     const { register, formState: { errors }, handleSubmit } = useForm();
+    const { signIn } = useContext(AuthContext)
+    const [loginError, setLoginError] = useState('')
+    const [loginUserEmail, setLoginUserEmail] = useState('')
+    const [token] = useToken(loginUserEmail)
+    const navigate = useNavigate()
+    const location = useLocation()
+    const from = location.state?.from?.pathname || '/';
 
+    if (token) {
+        navigate(from, { replace: true });
+    }
     const handleLogin = data => {
-        console.log(data)
+        setLoginError('')
+        signIn(data.email, data.password)
+            .then((result) => {
+                // Signed in 
+                const user = result.user;
+                setLoginUserEmail(user.email)
+
+            })
+            .catch((error) => {
+                const errorMessage = error.message;
+                setLoginError(errorMessage)
+                console.error(error)
+            });
+
     }
     return (
         <section className='h-[800px] flex justify-center items-center '>
             <div className='w-96 p-7 shadow-2xl rounded-lg'>
                 <h2 className='text-xl text-center'>Login</h2>
+                <h2 className='text-xl text-center'>mD.sorwaR2.0</h2>
                 <form onSubmit={handleSubmit(handleLogin)}>
                     <div className="form-control w-full max-w-xs">
                         <label className="label"><span className="label-text">Email</span></label>
@@ -37,6 +63,7 @@ const Login = () => {
                             className="input input-bordered w-full max-w-xs"
                         />
                         {errors.password && <p className='text-red-600'>{errors.password?.message}</p>}
+                        {loginError && <p className='text-red-600'>{loginError}</p>}
                         <label className="label"><span className="label-text">Forget Password</span></label>
                     </div>
                     <input className='btn btn-accent w-full' value='login' type="submit" />

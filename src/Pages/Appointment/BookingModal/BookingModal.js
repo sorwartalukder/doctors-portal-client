@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { format } from 'date-fns';
+import { AuthContext } from '../../../contexts/AuthProvider';
+import toast from 'react-hot-toast';
 
-const BookingModal = ({ treatment, setTreatment, selectedDate }) => {
+const BookingModal = ({ treatment, setTreatment, refetch, selectedDate }) => {
     const { name, slots } = treatment; //treatment is appointment option just different name
     const date = format(selectedDate, 'PP')
+    const { user } = useContext(AuthContext)
 
     const handleBooking = event => {
         event.preventDefault()
@@ -22,8 +25,27 @@ const BookingModal = ({ treatment, setTreatment, selectedDate }) => {
         }
         // TODO: send data to the server
         //and once data is saved the close tha modal and display success toast
-        console.log(booking)
-        setTreatment(null)
+        fetch('http://localhost:5000/bookings', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify(booking)
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log(data)
+                if (data.acknowledged) {
+                    toast.success('Booking confirmed')
+                    refetch()
+                    setTreatment(null)
+                }
+                else {
+                    toast.error(data.message)
+                }
+            })
+
+
     }
     return (
         <>
@@ -49,8 +71,8 @@ const BookingModal = ({ treatment, setTreatment, selectedDate }) => {
                             }
                         </select>
 
-                        <input name='name' type="text" placeholder="Your Name" className="input input-bordered w-full " />
-                        <input name='email' type="email" placeholder="Email Address" className="input input-bordered w-full " />
+                        <input name='name' type="text" defaultValue={user?.displayName} disabled placeholder="Your Name" className="input input-bordered w-full " />
+                        <input name='email' type="email" defaultValue={user?.email} disabled placeholder="Email Address" className="input input-bordered w-full " />
                         <input name='phone' type="text" placeholder="Phone Number" className="input input-bordered w-full " />
                         <br />
                         <input className='btn btn-accent w-full ' type="submit" value="Submit" />
