@@ -4,7 +4,7 @@ import { AuthContext } from '../../../contexts/AuthProvider';
 import toast from 'react-hot-toast';
 
 const BookingModal = ({ treatment, setTreatment, refetch, selectedDate }) => {
-    const { name, slots } = treatment; //treatment is appointment option just different name
+    const { name, slots, price } = treatment; //treatment is appointment option just different name
     const date = format(selectedDate, 'PP')
     const { user } = useContext(AuthContext)
 
@@ -22,6 +22,7 @@ const BookingModal = ({ treatment, setTreatment, refetch, selectedDate }) => {
             slot,
             email,
             phone,
+            price,
         }
         // TODO: send data to the server
         //and once data is saved the close tha modal and display success toast
@@ -34,7 +35,6 @@ const BookingModal = ({ treatment, setTreatment, refetch, selectedDate }) => {
         })
             .then(res => res.json())
             .then(data => {
-                console.log(data)
                 if (data.acknowledged) {
                     toast.success('Booking confirmed')
                     refetch()
