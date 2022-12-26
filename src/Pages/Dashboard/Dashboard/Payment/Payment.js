@@ -13,7 +13,7 @@ const Payment = () => {
     if (navigation.state === "loading") {
         return <Loading></Loading>
     }
-    const { treatment, appointmentDate, price, patient, slot } = booking;
+    const { treatment, appointmentDate, price, slot } = booking;
     return (
         <div>
             <h3 className="text-3xl">Payment for {treatment}</h3>

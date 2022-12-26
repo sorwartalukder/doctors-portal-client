@@ -71,6 +71,7 @@ const BookingModal = ({ treatment, setTreatment, refetch, selectedDate }) => {
                             }
                         </select>
 
+
                         <input name='name' type="text" defaultValue={user?.displayName} disabled placeholder="Your Name" className="input input-bordered w-full " />
                         <input name='email' type="email" defaultValue={user?.email} disabled placeholder="Email Address" className="input input-bordered w-full " />
                         <input name='phone' type="text" placeholder="Phone Number" className="input input-bordered w-full " />
